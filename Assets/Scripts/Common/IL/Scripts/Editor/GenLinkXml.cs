@@ -18,11 +18,48 @@
         [MenuItem("IL/生成link.xml",false,5)]
         public static void Gen()
         {
+            List<String> DllTypeWhiteList = new List<String>
+            {
+                "Assembly-CSharp.dll",
+                "Base.dll",
+                "Hotfix.dll",
+            };
+
             //收集需要输出xml的dll信息
             var assemblies = new List<Assembly>()
             {
-                //待填充
+                //搜索本程序集下的全部DLL
             };
+            var AssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);//Assembly-CSharp.dll 生成路径
+            Debug.Log(string.Format("<color=yellow>Load Assembly Path:{0}</color>", AssemblyPath));
+            int index = 0;
+            foreach (var dll in Directory.GetFiles(AssemblyPath, "*.dll"))
+            {
+                string dllName = dll.Substring(dll.LastIndexOf('\\') + 1);
+                Debug.Log("Include Dll："+dllName);
+                if (!DllTypeWhiteList.Contains(dllName))
+                    continue;
+                Assembly assembly =  Assembly.LoadFile(dll);
+                assemblies.Add(assembly);
+                Debug.LogError("Exist in DllTypeWhiteList,Need Reflect DllType:" + assemblies[index].ManifestModule.Name);
+                index++;
+            }
+
+            var HotfixDllPath = @"D:\UnityPro\Unity2018.3\ILR\Assets\StreamingAssets\Hotfix";//热更DLL路径
+            Debug.Log(string.Format("<color=yellow>Load HotfixDll Path:{0}</color>",HotfixDllPath));
+            index = 0;
+            foreach (var dll in Directory.GetFiles(HotfixDllPath, "*.dll"))
+            {
+                string dllName = dll.Substring(dll.LastIndexOf('\\') + 1);
+                Debug.Log("Include Dll：" + dllName);
+                if (!DllTypeWhiteList.Contains(dllName))
+                    continue;
+                Assembly assembly = Assembly.LoadFile(dll);
+                assemblies.Add(assembly);
+
+                Debug.LogError("Exist in DllTypeWhiteList,Need Reflect DllType:" + assemblies[index].ManifestModule.Name);
+                index++;
+            }
 
             assemblies = assemblies.Distinct().ToList();
 
